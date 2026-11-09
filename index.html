@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bhagat Seva - Final</title>
+<style>*{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#f2f2f2;padding-bottom:85px}header{background:#1a3a8f;color:#fff;padding:14px;text-align:center;font-size:22px;font-weight:800}
+.card{background:#fff;margin:10px;border-radius:14px;padding:14px}input,select{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:10px;font-size:16px}
+.call{background:#0a9d5c;color:#fff;border:0;padding:10px 18px;border-radius:10px;font-weight:700}.seva{display:flex;justify-content:space-between;align-items:center;background:#fff;margin:6px 10px;padding:10px;border-radius:10px}
+.seva button{width:42px;height:42px;font-size:24px;border-radius:50%;border:0}.save{position:fixed;bottom:70px;left:10px;right:10px;background:#0a9d5c;color:#fff;border:0;padding:15px;font-size:20px;font-weight:800;border-radius:12px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff}nav button{flex:1;padding:12px;border:0;background:#fff;font-weight:700}.hide{display:none}</style></head><body>
+<header>🙏 Bhagat Seva - Final</header>
+<div id="login" class="card"><b>ब्लॉक सेवादार लॉगिन</b><input id="lm" placeholder="मोबाइल नंबर"><input id="lp" type="password" placeholder="पासवर्ड / पिन"><button class="call" style="width:100%" onclick="login()">लॉगिन करें</button><p id="lmsg" style="color:red"></p></div>
+<div id="pageBhagat" class="hide"><input id="q" style="margin:10px;width:calc(100% - 20px);padding:12px;border-radius:10px;border:1px solid #ccc" placeholder="ID / मोबाइल / नाम से खोजें" oninput="renderBhagat()"><div id="bhagatList"></div></div>
+<div id="pageSeva" class="hide"><div class="card"><b>Seva Entry</b><input id="sq" placeholder="भगत खोजें" oninput="searchSeva()"><div id="sel"></div><select id="mahina"><option>नवंबर 2026</option><option>दिसंबर 2026</option><option>जनवरी 2027</option></select></div><div id="sevaForm"></div><button class="save" onclick="saveSeva()">✅ सहेजें</button></div>
+<div id="pageSewadar" class="hide"><div class="card"><b>ब्लॉक सेवादार</b><div id="sewadarList"></div></div></div>
+<nav><button onclick="show('Bhagat')">भगत</button><button onclick="show('Seva')">Seva Entry</button><button onclick="show('Sewadar')">ब्लॉक सेवादार</button></nav>
+<script>
+const API="https://script.google.com/macros/s/AKfycbxgSbN3HmsdkmMqKy5smbVRxGXgkaLKQp5iuht_NHYNl32L2CzoA5-Xw9q6Ai9v8BCSyQ/exec";
+const KEY="BHAGAT-SEVA-2026";
+let BH=[],SW=[],sel=null,vals=[];
+const COLS=["अन्नपूर्णा मुहिम में सेवा दिन","आश्रम में सेवा दिन","आश्रम में सेवा रात्रि","आश्रम गए भंडारा में","आश्रम गए भंडारा सेवा में","पुस्तक सेवा कितनी बार की","पुस्तकें सेवा हुई","SMS सेवा","Youtube Live संदेश सुनें","Guru Ji Ke Darshan","Youtube Subscribe सेवा","Instagram Follow Seva","विडियो बनाई","पुस्तक आर्डर प्राप्त किए"];
+async function get(s){let r=await fetch(API+"?key="+KEY+"&sheet="+encodeURIComponent(s));let j=await r.json();return j.data||[];}
+async function load(){BH=await get("Bhagat");SW=await get("ब्लॉक सेवादार");renderBhagat();renderSewadar();buildForm();}
+function show(p){["Bhagat","Seva","Sewadar"].forEach(x=>document.getElementById("page"+x).classList.add("hide"));document.getElementById("page"+p).classList.remove("hide");}
+function login(){let m=document.getElementById("lm").value.trim(),p=document.getElementById("lp").value.trim();localStorage.setItem("mob",m);localStorage.setItem("pin",p);document.getElementById("login").classList.add("hide");show("Bhagat");alert("लॉगिन हो गया भगत जी");}
+function renderBhagat(){let q=(document.getElementById("q").value||"").toLowerCase();let list=BH.slice(1).filter(r=>!q||String(r[1]).toLowerCase().includes(q)||String(r[2]).toLowerCase().includes(q)||String(r[5]).includes(q));document.getElementById("bhagatList").innerHTML=list.slice(0,100).map(r=>`<div class="card"><b>${r[2]||""}</b><br>पिता: ${r[4]||""} | ID: ${r[1]||""}<br>📱 ${r[5]||""} <a href="tel:${r[5]}"><button class="call">CALL</button></a><br>ब्लॉक: ${r[8]||""} | पता: ${r[7]||""}<br><button onclick="pick('${r[1]}')">👉 इस भगत की सेवा लिखें</button></div>`).join("");}
+function renderSewadar(){document.getElementById("sewadarList").innerHTML=SW.slice(1).map(r=>`<div style="border-bottom:1px solid #eee;padding:8px 0"><b>${r[2]}</b> - ${r[1]}<br>📱 ${r[5]} <a href="tel:${r[5]}"><button class="call">CALL</button></a> | स्थिति: ${r[8]}</div>`).join("");}
+function buildForm(){vals=COLS.map(()=>0);document.getElementById("sevaForm").innerHTML=COLS.map((c,i)=>`<div class="seva"><span>${c}</span><span><button onclick="chg(${i},-1)">-</button> <span id="v${i}">0</span> <button onclick="chg(${i},1)">+</button></span></div>`).join("");}
+function chg(i,d){vals[i]=Math.max(0,vals[i]+d);document.getElementById("v"+i).innerText=vals[i];}
+function searchSeva(){let q=document.getElementById("sq").value.toLowerCase();let r=BH.slice(1).find(x=>String(x[1]).toLowerCase().includes(q)||String(x[2]).toLowerCase().includes(q)||String(x[5]).includes(q));if(r)pick(r[1]);}
+function pick(id){sel=BH.slice(1).find(r=>String(r[1])==String(id));document.getElementById("sel").innerHTML=`<div style="background:#eef;padding:10px;border-radius:10px;margin-top:10px"><b>${sel[2]}</b><br>${sel[4]} | ${sel[8]} | ${sel[5]}</div>`;show("Seva");}
+async function saveSeva(){if(!sel){alert("पहले भगत चुनें");return;}let row=[sel[1],sel[2],sel[3],sel[4],sel[7],sel[8],document.getElementById("mahina").value,...vals];let f=await fetch(API,{method:"POST",body:new URLSearchParams({key:KEY,sheet:"Seva Entry",mobile:localStorage.getItem("mob"),pin:localStorage.getItem("pin"),data:JSON.stringify(row)})});let j=await f.json();alert(j.ok?"✅ सेवा सहेज दी गई":"❌ "+j.error);buildForm();}
+load();
+</script></body></html>
